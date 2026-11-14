@@ -42,27 +42,35 @@ test("app role can read audit_logs", { skip }, async () => {
   });
 });
 
-test("app role is denied UPDATE on audit_logs by privilege, not only by trigger", { skip }, async () => {
-  await withAppRole(async (client) => {
-    await client.query("SAVEPOINT before_update");
-    await assert.rejects(
-      client.query(`UPDATE audit_logs SET action = 'tampered'`),
-      /permission denied for table audit_logs/,
-    );
-    await client.query("ROLLBACK TO SAVEPOINT before_update");
-  });
-});
+test(
+  "app role is denied UPDATE on audit_logs by privilege, not only by trigger",
+  { skip },
+  async () => {
+    await withAppRole(async (client) => {
+      await client.query("SAVEPOINT before_update");
+      await assert.rejects(
+        client.query(`UPDATE audit_logs SET action = 'tampered'`),
+        /permission denied for table audit_logs/,
+      );
+      await client.query("ROLLBACK TO SAVEPOINT before_update");
+    });
+  },
+);
 
-test("app role is denied DELETE on audit_logs by privilege, not only by trigger", { skip }, async () => {
-  await withAppRole(async (client) => {
-    await client.query("SAVEPOINT before_delete");
-    await assert.rejects(
-      client.query(`DELETE FROM audit_logs`),
-      /permission denied for table audit_logs/,
-    );
-    await client.query("ROLLBACK TO SAVEPOINT before_delete");
-  });
-});
+test(
+  "app role is denied DELETE on audit_logs by privilege, not only by trigger",
+  { skip },
+  async () => {
+    await withAppRole(async (client) => {
+      await client.query("SAVEPOINT before_delete");
+      await assert.rejects(
+        client.query(`DELETE FROM audit_logs`),
+        /permission denied for table audit_logs/,
+      );
+      await client.query("ROLLBACK TO SAVEPOINT before_delete");
+    });
+  },
+);
 
 test("app role is denied TRUNCATE on audit_logs", { skip }, async () => {
   await withAppRole(async (client) => {

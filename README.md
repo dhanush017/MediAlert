@@ -6,7 +6,7 @@ MediAlert is a reminder tool. It is not medical advice and does not replace a do
 
 ## Status
 
-Repository skeleton. Day 1 of the MediWeek plan (`mediweek-plan-v4-telegram.md`) builds on this.
+Day 1 of the MediWeek plan (`mediweek-plan-v4-telegram.md`) is complete: schema and migrations, append-only audit log, least-privilege app role, health endpoint, lint, format, and CI. The Telegram bot token still needs to be created in @BotFather.
 
 ## Layout
 
@@ -16,6 +16,22 @@ medialert/
   frontend/    React + Vite web view for patients and caregivers
   docs/        API notes, architecture diagram, evaluation results
 ```
+
+## Architecture
+
+```mermaid
+flowchart LR
+  patient([Patient on Telegram]) <-->|buttons and typed replies| tg[Telegram Bot API]
+  caregiver([Caregiver on Telegram]) <--> tg
+  tg -->|webhook, secret token| api[Backend API]
+  web([Web view]) -->|HTTPS| api
+  qstash[Upstash QStash] -->|POST /api/process-reminders every 5 min, signed| api
+  api --> db[(PostgreSQL)]
+  api -->|reminders and alerts| tg
+  db --- audit[(audit_logs: append-only)]
+```
+
+The backend writes to PostgreSQL through the `medialert_app` role, which can only INSERT and SELECT on `audit_logs`. Scheduling runs outside the server, so free hosts that sleep do not miss reminders.
 
 ## Stack
 
@@ -34,6 +50,8 @@ cp backend/.env.example backend/.env   # fill in values; never commit .env
 npm install
 npm run dev
 ```
+
+Checks: `npm run format:check`, `npm run lint`, `npm run build`, and `npm test`. The database tests skip when `DATABASE_URL` is not set.
 
 ## Environment
 

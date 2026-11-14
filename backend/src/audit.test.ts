@@ -40,8 +40,5 @@ test("audit_logs rejects DELETE", { skip }, async () => {
   );
   const id = inserted.rows[0].id as string;
 
-  await assert.rejects(
-    pool!.query(`DELETE FROM audit_logs WHERE id = $1`, [id]),
-    /append-only/,
-  );
+  await assert.rejects(pool!.query(`DELETE FROM audit_logs WHERE id = $1`, [id]), /append-only/);
 });
